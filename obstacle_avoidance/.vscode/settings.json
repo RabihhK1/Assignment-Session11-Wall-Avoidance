@@ -1,0 +1,22 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/rabih/Desktop/ros2_ws/install/warehouse_robot/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/warehouse_monitor/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/temperature_monitor/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/session5_academy/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/interfaces/local/lib/python3.10/dist-packages",
+        "/home/rabih/Desktop/ros2_ws/install/custom_interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/rabih/Desktop/ros2_ws/install/warehouse_robot/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/warehouse_monitor/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/temperature_monitor/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/session5_academy/lib/python3.10/site-packages",
+        "/home/rabih/Desktop/ros2_ws/install/interfaces/local/lib/python3.10/dist-packages",
+        "/home/rabih/Desktop/ros2_ws/install/custom_interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}
