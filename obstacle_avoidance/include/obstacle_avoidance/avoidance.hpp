@@ -25,13 +25,13 @@ private:
     geometry_msgs::msg::Twist cmd_vel_msg_;
     visualization_msgs::msg::MarkerArray marker_array_;
     sensor_msgs::msg::LaserScan::SharedPtr laser_scan_;
-    std::vector<geometry_msgs::msg::Point> repulsive_force_;
-    geometry_msgs::msg::Point attractive_force_;
-    geometry_msgs::msg::Point resultant_force_;
+    std::vector<geometry_msgs::msg::Vector3> repulsive_force_;
+    geometry_msgs::msg::Vector3 attractive_force_;
+    geometry_msgs::msg::Vector3 resultant_force_;
 
     void calculate_forces();
-    geometry_msgs::msg::Point calculate_repulsive_force(float range, float angle);
-    geometry_msgs::msg::Point calculate_attractive_force();
+    geometry_msgs::msg::Vector3 calculate_repulsive_force(float range, float angle);
+    geometry_msgs::msg::Vector3 calculate_attractive_force();
 };
 
 #endif  // AVOIDANCE_HPP_

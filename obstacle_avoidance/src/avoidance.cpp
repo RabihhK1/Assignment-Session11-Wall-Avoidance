@@ -27,9 +27,12 @@ void Avoidance::timer_callback()
 {
     if (laser_scan_) {
         calculate_forces();
-        publish_cmd_vel();
-        publish_markers();
+    } else {
+        cmd_vel_msg_.linear.x = 0;
+        cmd_vel_msg_.angular.z = 0;
     }
+    publish_cmd_vel();
+    publish_markers();
 }
 
 void Avoidance::calculate_forces()
@@ -40,10 +43,19 @@ void Avoidance::calculate_forces()
     resultant_force_.z = 0;
 
     // Calculate repulsive forces
-    for (size_t i = 0; i < laser_scan_->ranges.size(); ++i) {
-        if (laser_scan_->ranges[i] < laser_scan_->range_max) {
+    for (size_t i = 0; i < laser_scan_->ranges.size()/8; ++i) {
+        if (laser_scan_->ranges[i] < 0.7) {
             float angle = laser_scan_->angle_min + i * laser_scan_->angle_increment;
-            geometry_msgs::msg::Point force = calculate_repulsive_force(laser_scan_->ranges[i], angle);
+            geometry_msgs::msg::Vector3 force = calculate_repulsive_force(laser_scan_->ranges[i], angle);
+            repulsive_force_.push_back(force);
+            resultant_force_.x += force.x;
+            resultant_force_.y += force.y;
+        }
+    }
+    for (size_t i = 7*laser_scan_->ranges.size()/8; i < laser_scan_->ranges.size(); ++i) {
+        if (laser_scan_->ranges[i] < 0.7) {
+            float angle = laser_scan_->angle_min + i * laser_scan_->angle_increment;
+            geometry_msgs::msg::Vector3 force = calculate_repulsive_force(laser_scan_->ranges[i], angle);
             repulsive_force_.push_back(force);
             resultant_force_.x += force.x;
             resultant_force_.y += force.y;
@@ -56,24 +68,24 @@ void Avoidance::calculate_forces()
     resultant_force_.y += attractive_force_.y;
 
     // Modify cmd_vel_msg_ based on resultant force
-    cmd_vel_msg_.linear.x = 0.5;  // Example value, update based on force calculations
+    cmd_vel_msg_.linear.x = resultant_force_.x;
     cmd_vel_msg_.angular.z = std::atan2(resultant_force_.y, resultant_force_.x);
 }
 
-geometry_msgs::msg::Point Avoidance::calculate_repulsive_force(float range, float angle)
+geometry_msgs::msg::Vector3 Avoidance::calculate_repulsive_force(float range, float angle)
 {
-    geometry_msgs::msg::Point force;
-    float strength = 1.0 / (range * range); // Repulsive force strength decreases with distance
+    geometry_msgs::msg::Vector3 force;
+    float strength = 0.002 / (range * range); // Repulsive force strength decreases with distance
     force.x = -strength * std::cos(angle);
     force.y = -strength * std::sin(angle);
     force.z = 0.0;
     return force;
 }
 
-geometry_msgs::msg::Point Avoidance::calculate_attractive_force()
+geometry_msgs::msg::Vector3 Avoidance::calculate_attractive_force()
 {
-    geometry_msgs::msg::Point force;
-    force.x = 1.0; // Attractive force towards the goal in the positive x direction
+    geometry_msgs::msg::Vector3 force;
+    force.x = 0.5; // Attractive force towards the goal in the positive x direction
     force.y = 0.0;
     force.z = 0.0;
     return force;
