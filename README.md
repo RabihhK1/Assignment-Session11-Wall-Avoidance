@@ -39,5 +39,5 @@ In the Ros2 ws:
 ```sh
 colcon build
 source install/setup.bash
-ros2 run obstacle_avoidance avoidance 
+ros2 launch obstacle_avoidance launch.py
 ```
