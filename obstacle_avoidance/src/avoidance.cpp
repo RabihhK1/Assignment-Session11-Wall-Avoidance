@@ -98,42 +98,55 @@ void Avoidance::publish_cmd_vel()
 
 void Avoidance::publish_markers()
 {
+    // Delete old markers
+    for (auto& marker : marker_array_.markers) {
+        marker.action = visualization_msgs::msg::Marker::DELETE;
+    }
+    marker_pub_->publish(marker_array_);
+
+    // Clear the marker array for new markers
     marker_array_.markers.clear();
     int marker_id = 0;
 
+    geometry_msgs::msg::Vector3 repulsive_force;
+
     // Add repulsive forces to marker array
-    for (const auto& point : repulsive_force_) {
-        visualization_msgs::msg::Marker marker;
-        marker.header.frame_id = "base_link";
-        marker.header.stamp = this->now();
-        marker.ns = "repulsive_force";
-        marker.id = marker_id++;
-        marker.type = visualization_msgs::msg::Marker::ARROW;
-        marker.action = visualization_msgs::msg::Marker::ADD;
-        marker.pose.orientation.w = 1.0;
-        marker.scale.x = 0.1;
-        marker.scale.y = 0.02;
-        marker.scale.z = 0.02;
-        marker.color.a = 1.0; // Don't forget to set the alpha!
-        marker.color.r = 1.0;
-        marker.color.g = 0.0;
-        marker.color.b = 0.0;
-
-        geometry_msgs::msg::Point start;
-        start.x = 0;
-        start.y = 0;
-        start.z = 0;
-
-        geometry_msgs::msg::Point end;
-        end.x = point.x;
-        end.y = point.y;
-        end.z = point.z;
-
-        marker.points.push_back(start);
-        marker.points.push_back(end);
-
-        marker_array_.markers.push_back(marker);
+    for (const auto& force : repulsive_force_) {
+        repulsive_force.x += force.x;
+        repulsive_force.y += force.y;
+        repulsive_force.z += force.z;
     }
+
+    visualization_msgs::msg::Marker repulsive_marker;
+    repulsive_marker.header.frame_id = "base_link";
+    repulsive_marker.header.stamp = this->now();
+    repulsive_marker.ns = "repulsive_force";
+    repulsive_marker.id = marker_id++;
+    repulsive_marker.type = visualization_msgs::msg::Marker::ARROW;
+    repulsive_marker.action = visualization_msgs::msg::Marker::ADD;
+    repulsive_marker.pose.orientation.w = 1.0;
+    repulsive_marker.scale.x = 0.02;
+    repulsive_marker.scale.y = 0.05;
+    repulsive_marker.scale.z = 0.05;
+    repulsive_marker.color.a = 1.0; // Don't forget to set the alpha!
+    repulsive_marker.color.r = 1.0;
+    repulsive_marker.color.g = 0.0;
+    repulsive_marker.color.b = 0.0;
+
+    geometry_msgs::msg::Point start;
+    start.x = 0;
+    start.y = 0;
+    start.z = 0;
+
+    geometry_msgs::msg::Point end;
+    end.x = repulsive_force.x;
+    end.y = repulsive_force.y;
+    end.z = repulsive_force.z;
+
+    repulsive_marker.points.push_back(start);
+    repulsive_marker.points.push_back(end);
+
+    marker_array_.markers.push_back(repulsive_marker);
 
     // Add attractive force to marker array
     visualization_msgs::msg::Marker attractive_marker;
@@ -144,9 +157,9 @@ void Avoidance::publish_markers()
     attractive_marker.type = visualization_msgs::msg::Marker::ARROW;
     attractive_marker.action = visualization_msgs::msg::Marker::ADD;
     attractive_marker.pose.orientation.w = 1.0;
-    attractive_marker.scale.x = 0.2;
-    attractive_marker.scale.y = 0.04;
-    attractive_marker.scale.z = 0.04;
+    attractive_marker.scale.x = 0.02;
+    attractive_marker.scale.y = 0.05;
+    attractive_marker.scale.z = 0.05;
     attractive_marker.color.a = 1.0; // Don't forget to set the alpha!
     attractive_marker.color.r = 0.0;
     attractive_marker.color.g = 0.0;
@@ -176,9 +189,9 @@ void Avoidance::publish_markers()
     resultant_marker.type = visualization_msgs::msg::Marker::ARROW;
     resultant_marker.action = visualization_msgs::msg::Marker::ADD;
     resultant_marker.pose.orientation.w = 1.0;
-    resultant_marker.scale.x = 0.3;
-    resultant_marker.scale.y = 0.06;
-    resultant_marker.scale.z = 0.06;
+    resultant_marker.scale.x = 0.02;
+    resultant_marker.scale.y = 0.05;
+    resultant_marker.scale.z = 0.05;
     resultant_marker.color.a = 1.0; // Don't forget to set the alpha!
     resultant_marker.color.r = 0.0;
     resultant_marker.color.g = 1.0;
