@@ -32,6 +32,11 @@ private:
     void calculate_forces();
     geometry_msgs::msg::Vector3 calculate_repulsive_force(float range, float angle);
     geometry_msgs::msg::Vector3 calculate_attractive_force();
+
+    double repulsive_strength_;
+    double repulsive_distance_;
+    double speed_;
+    double frequency_;
 };
 
 #endif  // AVOIDANCE_HPP_

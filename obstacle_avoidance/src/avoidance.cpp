@@ -9,11 +9,22 @@ Avoidance::Avoidance()
     cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/visualization_marker_array", 10);
 
-    timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(50), std::bind(&Avoidance::timer_callback, this)); // 20 Hz
 
+    this->declare_parameter("repulsive_strength", 0.002); // Default value is 0.002
+    repulsive_strength_ = this->get_parameter("repulsive_strength").as_double();
+    this->declare_parameter("repulsive_distance", 0.7); // Default value is 0.7
+    repulsive_distance_ = this->get_parameter("repulsive_distance").as_double();
+    this->declare_parameter("speed", 0.5); // Default value is 0.5
+    speed_ = this->get_parameter("speed").as_double();
+    this->declare_parameter("frequency", 20); // Default value is 20
+    frequency_ = this->get_parameter("frequency").as_int();
+
+    int period_in_milliseconds = 1000 / frequency_;
+    timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(period_in_milliseconds), std::bind(&Avoidance::timer_callback, this));
+    
     // Initialize cmd_vel message
-    cmd_vel_msg_.linear.x = 0.5;
+    cmd_vel_msg_.linear.x = speed_;
     cmd_vel_msg_.angular.z = 0.0;
 }
 
@@ -44,7 +55,7 @@ void Avoidance::calculate_forces()
 
     // Calculate repulsive forces
     for (size_t i = 0; i < laser_scan_->ranges.size()/8; ++i) {
-        if (laser_scan_->ranges[i] < 0.7) {
+        if (laser_scan_->ranges[i] < repulsive_distance_) {
             float angle = laser_scan_->angle_min + i * laser_scan_->angle_increment;
             geometry_msgs::msg::Vector3 force = calculate_repulsive_force(laser_scan_->ranges[i], angle);
             repulsive_force_.push_back(force);
@@ -53,7 +64,7 @@ void Avoidance::calculate_forces()
         }
     }
     for (size_t i = 7*laser_scan_->ranges.size()/8; i < laser_scan_->ranges.size(); ++i) {
-        if (laser_scan_->ranges[i] < 0.7) {
+        if (laser_scan_->ranges[i] < repulsive_distance_) {
             float angle = laser_scan_->angle_min + i * laser_scan_->angle_increment;
             geometry_msgs::msg::Vector3 force = calculate_repulsive_force(laser_scan_->ranges[i], angle);
             repulsive_force_.push_back(force);
@@ -75,7 +86,7 @@ void Avoidance::calculate_forces()
 geometry_msgs::msg::Vector3 Avoidance::calculate_repulsive_force(float range, float angle)
 {
     geometry_msgs::msg::Vector3 force;
-    float strength = 0.002 / (range * range); // Repulsive force strength decreases with distance
+    float strength = repulsive_strength_ / (range * range); // Repulsive force strength decreases with distance
     force.x = -strength * std::cos(angle);
     force.y = -strength * std::sin(angle);
     force.z = 0.0;
@@ -85,7 +96,7 @@ geometry_msgs::msg::Vector3 Avoidance::calculate_repulsive_force(float range, fl
 geometry_msgs::msg::Vector3 Avoidance::calculate_attractive_force()
 {
     geometry_msgs::msg::Vector3 force;
-    force.x = 0.5; // Attractive force towards the goal in the positive x direction
+    force.x = speed_; // Attractive force towards the goal in the positive x direction
     force.y = 0.0;
     force.z = 0.0;
     return force;
