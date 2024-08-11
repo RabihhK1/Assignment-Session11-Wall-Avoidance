@@ -36,6 +36,14 @@ void Avoidance::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
 
 void Avoidance::timer_callback()
 {
+    auto frequency = this->get_parameter("frequency").as_int();
+    if (frequency != frequency_) {
+        frequency_ = frequency;
+        int period_in_milliseconds = 1000 / frequency_;
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(period_in_milliseconds), std::bind(&Avoidance::timer_callback, this));
+    }
+    
     if (laser_scan_) {
         calculate_forces();
     } else {
@@ -53,6 +61,7 @@ void Avoidance::calculate_forces()
     resultant_force_.y = 0;
     resultant_force_.z = 0;
 
+    repulsive_distance_ = this->get_parameter("repulsive_distance").as_double();
     // Calculate repulsive forces
     for (size_t i = 0; i < laser_scan_->ranges.size()/8; ++i) {
         if (laser_scan_->ranges[i] < repulsive_distance_) {
@@ -85,6 +94,7 @@ void Avoidance::calculate_forces()
 
 geometry_msgs::msg::Vector3 Avoidance::calculate_repulsive_force(float range, float angle)
 {
+    repulsive_strength_ = this->get_parameter("repulsive_strength").as_double();
     geometry_msgs::msg::Vector3 force;
     float strength = repulsive_strength_ / (range * range); // Repulsive force strength decreases with distance
     force.x = -strength * std::cos(angle);
@@ -95,6 +105,7 @@ geometry_msgs::msg::Vector3 Avoidance::calculate_repulsive_force(float range, fl
 
 geometry_msgs::msg::Vector3 Avoidance::calculate_attractive_force()
 {
+    speed_ = this->get_parameter("speed").as_double();
     geometry_msgs::msg::Vector3 force;
     force.x = speed_; // Attractive force towards the goal in the positive x direction
     force.y = 0.0;

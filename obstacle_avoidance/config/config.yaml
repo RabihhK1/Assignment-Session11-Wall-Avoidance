@@ -1,6 +1,6 @@
 /avoidance_namespace/avoidance:
    ros__parameters:
-      repulsive_strength: 0.005
+      repulsive_strength: 0.002
       repulsive_distance: 0.7
       speed: 0.5
       frequency: 20
